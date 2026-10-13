@@ -22,6 +22,19 @@
   </mat-sidenav>
 
   <mat-sidenav-content class="content-shell">
+    <mat-toolbar>
+      <button matIconButton class="example-icon" aria-label="Example icon-button with menu icon">
+        <mat-icon>Shark</mat-icon>
+      </button>
+      <span>AquaLife Aquatic Center Management Platform</span>
+      <span class="example-spacer"></span>
+      <button matIconButton class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
+      </button>
+      <button matIconButton class="example-icon" aria-label="Example icon-button with share icon">
+        <mat-icon>share</mat-icon>
+      </button>
+    </mat-toolbar>
+
     <main class="page-content">
       <router-outlet/>
     </main>
