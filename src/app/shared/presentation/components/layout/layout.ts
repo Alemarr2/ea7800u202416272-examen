@@ -22,7 +22,7 @@ export class Layout {
   readonly options = [
     {link: '/home', label: 'Home', icon: 'home'},
     {link: '/about', label: 'About', icon: 'info'},
-    {link: '/learning/categories', label: 'New Reservation', icon: 'AquaticCenter'},
+    {link: '/aquatic-centers/reservations', label: 'New Reservation', icon: 'AquaticCenter'},
     //{link: '/learning/courses', label: 'Courses', icon: 'school'}
   ];
 

@@ -1,0 +1,6 @@
+<h1 class="title">{{ isEdit ? 'Edit reservation' : 'New reservation' }}</h1>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-form-field><mat-label>Title</mat-label><input matInput formControlName="participantName">@if (form.controls.participantName.hasError('required')) { <mat-error>Title is required</mat-error> }</mat-form-field>
+  <mat-form-field><mat-label>AquaticCenter</mat-label><mat-select formControlName="aquaticCenterId">@for (aquaticCenter of aquaticCenters(); track aquaticCenter.id) { <mat-option [value]="aquaticCenter.id">{{ aquaticCenter.name }}</mat-option> }</mat-select></mat-form-field>
+  <button mat-raised-button type="submit" [disabled]="form.invalid">{{ isEdit ? 'Update' : 'Create' }}</button>
+</form>

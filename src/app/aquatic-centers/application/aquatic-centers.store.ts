@@ -63,7 +63,7 @@ export class AquaticCentersStore {
    * @param id - Category identifier.
    * @returns Reactive selection for the requested category.
    */
-  getCategoryById = (id: number): Signal<AquaticCenter | undefined> =>
+  getAquaticCenterById = (id: number): Signal<AquaticCenter | undefined> =>
     computed(() => id ? this.aquaticCenters().find(c => c.id === id) : undefined);
 
   /**
