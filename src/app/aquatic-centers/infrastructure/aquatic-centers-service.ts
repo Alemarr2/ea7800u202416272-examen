@@ -50,7 +50,7 @@ export class AquaticCentersService extends BaseApi {
    * Retrieves all categories.
    * @returns Stream with the category collection.
    */
-  getCategories = (): Observable<AquaticCenter[]> =>
+  getAquaticCenters = (): Observable<AquaticCenter[]> =>
     this.aquaticCentersEndpoint.getAll();
 
   /**

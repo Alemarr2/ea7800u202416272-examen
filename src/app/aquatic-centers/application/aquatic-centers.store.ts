@@ -1,42 +1,40 @@
 import {computed, inject, Service, Signal, signal} from '@angular/core';
-
 import {AquaticCenter} from '../domain/model/aquatic-center.entity';
 import {Reservation} from '../domain/model/reservation.entity';
-
-
+import {AquaticCentersService} from '../infrastructure/aquatic-centers-service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {retry} from 'rxjs';
 
 /**
- * Holds learning application state and coordinates course/category application layer behavior.
+ * Holds learning application state and coordinates reservation/category application layer behavior.
  */
 @Service()
-export class LearningStore {
-  private readonly learningService = inject(LearningService);
+export class AquaticCentersStore {
+  private readonly aquaticCenterService = inject(AquaticCentersService);
 
   /**
-   * Computed signal for the count of courses.
+   * Computed signal for the count of reservations.
    */
-  readonly courseCount = computed(() => this.courses().length);
+  readonly reservationCount = computed(() => this.reservations().length);
 
   /**
-   * Computed signal for the count of categories.
+   * Computed signal for the count of aquatic centers.
    */
-  readonly categoryCount = computed(() => this.categories().length);
+  readonly aquaticCenterCount = computed(() => this.aquaticCenters().length);
 
-  private readonly coursesSignal = signal<Course[]>([]);
+  private readonly reservationsSignal = signal<Reservation[]>([]);
 
   /**
-   * Readonly signal for the list of courses.
+   * Readonly signal for the list of reservation.
    */
-  readonly courses = this.coursesSignal.asReadonly();
+  readonly reservations = this.reservationsSignal.asReadonly();
 
-  private readonly categoriesSignal = signal<Category[]>([]);
+  private readonly aquaticCentersSignal = signal<AquaticCenter[]>([]);
 
   /**
-   * Readonly signal for the list of categories.
+   * Readonly signal for the list of aquatic centers.
    */
-  readonly categories = this.categoriesSignal.asReadonly();
+  readonly aquaticCenters = this.aquaticCentersSignal.asReadonly();
 
   private readonly loadingSignal = signal<boolean>(false);
 
@@ -56,8 +54,8 @@ export class LearningStore {
    * Creates an instance of LearningStore and loads initial data.
    */
   constructor() {
-    this.loadCategories();
-    this.loadCourses();
+    this.loadAquaticCenters();
+    this.loadReservations();
   }
 
   /**
@@ -65,50 +63,48 @@ export class LearningStore {
    * @param id - Category identifier.
    * @returns Reactive selection for the requested category.
    */
-  getCategoryById = (id: number): Signal<Category | undefined> =>
-    computed(() => id ? this.categories().find(c => c.id === id) : undefined);
+  getCategoryById = (id: number): Signal<AquaticCenter | undefined> =>
+    computed(() => id ? this.aquaticCenters().find(c => c.id === id) : undefined);
 
   /**
-   * Selects a course by identifier.
-   * @param id - Course identifier.
-   * @returns Reactive selection for the requested course.
+   * Selects a reservation by identifier.
+   * @param id - reservation identifier.
+   * @returns Reactive selection for the requested reservation.
    */
-  getCourseById = (id: number): Signal<Course | undefined> => {
-    return computed(() => id ? this.courses().find(c => c.id === id) : undefined);
+  getReservationById = (id: number): Signal<Reservation | undefined> => {
+    return computed(() => id ? this.reservations().find(c => c.id === id) : undefined);
   }
 
   /**
-   * adds a new course.
-   * @param course - The course to add.
+   * adds a new reservation.
+   * @param reservation - The reservation to add.
    */
-  addCourse = (course: Course): void => {
+  addReservation = (reservation: Reservation): void => {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
-    this.learningService.createCourse(course).pipe(retry(2)).subscribe({
-      next: createdCourse => {
-        createdCourse = this.assignCategoryToCourse(course);
-        this.coursesSignal.update(courses => [...courses, createdCourse]);
+    this.aquaticCenterService.createReservation(reservation).pipe(retry(2)).subscribe({
+      next: createdReservation => {
+        this.reservationsSignal.update(reservations => [...reservations, createdReservation]);
         this.loadingSignal.set(false);
       },
       error: err => {
-        this.errorSignal.set(this.formatError(err, 'Failed to create course'));
+        this.errorSignal.set(this.formatError(err, 'Failed to create reservation'));
         this.loadingSignal.set(false);
       }
     });
   };
 
   /**
-   * Updates an existing course.
-   * @param updatedCourse - The course to update.
+   * Updates an existing reservation.
+   * @param updatedReservation - The reservation to update.
    */
-  updateCourse = (updatedCourse: Course): void => {
+  updateReservation = (updatedReservation: Reservation): void => {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
-    this.learningService.updateCourse(updatedCourse).pipe(retry(2)).subscribe({
-      next: course => {
-        course = this.assignCategoryToCourse(course);
-        this.coursesSignal.update(courses =>
-          courses.map(c => c.id === course.id ? course : c)
+    this.aquaticCenterService.updateReservation(updatedReservation).pipe(retry(2)).subscribe({
+      next: reservation => {
+        this.reservationsSignal.update(reservations =>
+          reservations.map(r => r.id === reservation.id ? reservation : r)
         );
         this.loadingSignal.set(false);
       },
@@ -119,98 +115,20 @@ export class LearningStore {
     });
   }
 
-  /**
-   * Deletes a course by ID.
-   * @param id - The ID of the course to delete.
-   */
-  deleteCourse = (id: number): void => {
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-    this.learningService.deleteCourse(id).pipe(retry(2)).subscribe({
-      next: () => {
-        this.coursesSignal.update(courses => courses.filter(c => c.id !== id));
-        this.loadingSignal.set(false);
-      },
-      error: err => {
-        this.errorSignal.set(this.formatError(err, 'Failed to delete course'));
-        this.loadingSignal.set(false);
-      }
-    });
-  }
 
   /**
-   * Adds a new category.
-   * @param category - The category to add.
+   * Loads all reservations
    */
-  addCategory = (category: Category): void => {
+  private loadReservations = (): void => {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
-    this.learningService.createCategory(category).pipe(retry(2)).subscribe({
-      next: createdCategory => {
-        this.categoriesSignal.update(categories => [...categories, createdCategory]);
-        this.loadingSignal.set(false);
-      },
-      error: err => {
-        this.errorSignal.set(this.formatError(err, 'Failed to create category'));
-        this.loadingSignal.set(false);
-      }
-    });
-  }
-
-  /**
-   * Updates an existing category.
-   * @param updatedCategory - The category to update.
-   */
-  updateCategory = (updatedCategory: Category): void => {
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-    this.learningService.updateCategory(updatedCategory).pipe(retry(2)).subscribe({
-      next: category => {
-        this.categoriesSignal.update(categories =>
-          categories.map(c => c.id === category.id ? category : c)
-        );
-        this.loadingSignal.set(false);
-      },
-      error: err => {
-        this.errorSignal.set(this.formatError(err, 'Failed to update category'));
-        this.loadingSignal.set(false);
-      }
-    });
-  }
-
-  /**
-   * Deletes a category by ID.
-   * @param id - The ID of the category to delete.
-   */
-  deleteCategory = (id: number): void => {
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-    this.learningService.deleteCategory(id).pipe(retry(2)).subscribe({
-      next: () => {
-        this.categoriesSignal.update(categories => categories.filter(c => c.id !== id));
+    this.aquaticCenterService.getReservations().pipe(takeUntilDestroyed()).subscribe({
+      next: reservations => {
+        console.log(reservations);
+        this.reservationsSignal.set(reservations);
         this.loadingSignal.set(false);
         this.errorSignal.set(null);
-      },
-      error: err => {
-        this.errorSignal.set(this.formatError(err, 'Failed to delete category'));
-        this.loadingSignal.set(false);
-      }
-    });
-  }
-
-  /**
-   * Loads all courses from the API.
-   */
-  private loadCourses = (): void => {
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-    this.learningService.getCourses().pipe(takeUntilDestroyed()).subscribe({
-      next: courses => {
-        console.log(courses);
-        this.coursesSignal.set(courses);
-        this.loadingSignal.set(false);
-        this.errorSignal.set(null);
-        this.assignCategoriesToCourses();
+        this.assignAquaticCentersToReservations();
 
 
       },
@@ -224,37 +142,34 @@ export class LearningStore {
   /**
    * Loads all categories from the API.
    */
-  private loadCategories = (): void => {
+  private loadAquaticCenters = (): void => {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
-    this.learningService.getCategories().pipe(takeUntilDestroyed()).subscribe({
-      next: categories => {
-        this.categoriesSignal.set(categories);
+    this.aquaticCenterService.getAquaticCenters().pipe(takeUntilDestroyed()).subscribe({
+      next: aquaticCenters => {
+        this.aquaticCentersSignal.set(aquaticCenters);
         this.loadingSignal.set(false);
         this.errorSignal.set(null);
       },
       error: err => {
-        this.errorSignal.set(this.formatError(err, 'Failed to load categories'));
+        this.errorSignal.set(this.formatError(err, 'Failed to load aquatic centers'));
         this.loadingSignal.set(false);
       }
     });
   }
 
-  private assignCategoriesToCourses = (): void => {
-    this.coursesSignal.update(courses => courses.map(course => this.assignCategoryToCourse(course)));
+  private assignAquaticCentersToReservations = (): void => {
+    this.reservationsSignal.update(reservations => reservations.map(reservation => this.assignAquaticCenterToReservation(reservation)));
   };
 
-  private assignCategoryToCourse = (course: Course): Course => {
-    const categoryId = course.categoryId ?? 0;
-    course.category = categoryId ? this.getCategoryById(categoryId)() ?? null : null;
-    return course;
+  private assignAquaticCenterToReservation = (reservation: Reservation): Reservation => {
+    const aquaticCenterId = reservation.aquaticCenterId ?? 0;
+    //reservation.aquaticCenterId = aquaticCenterId ? this.getCategoryById(aquaticCenterId)() ?? null : null;
+    return reservation;
   }
 
   /**
    * Normalizes unknown errors into a display-friendly message.
-   * @param error - Source error.
-   * @param fallback - Default message when details are unavailable.
-   * @returns Normalized message.
    */
   private formatError = (error: unknown, fallback: string): string => {
     if (error instanceof Error) {
