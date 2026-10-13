@@ -19,7 +19,7 @@ export interface AquaticCenterResource extends BaseResource {
 /**
  * Response envelope for reservation collection queries.
  */
-export interface AquaticCenterResponse extends BaseResponse {
+export interface AquaticCentersResponse extends BaseResponse {
   /**
    * An Array for reservation resources included in the response.
    */

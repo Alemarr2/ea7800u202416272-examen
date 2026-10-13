@@ -1,6 +1,6 @@
 
 
-export class Reservations {
+export class Reservation {
 
   #id:                 number;
   #aquaticCenterId:    number;
