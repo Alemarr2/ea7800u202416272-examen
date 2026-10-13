@@ -9,7 +9,7 @@ import {HttpClient} from '@angular/common/http';
 
 
 @Service()
-export class LearningService extends BaseApi {
+export class AquaticCentersService extends BaseApi {
   private readonly http = inject(HttpClient);
   private readonly reservationsEndpoint = new ReservationsApiEndpoint(this.http);
   private readonly aquaticCentersEndpoint = new AquaticCentersApiEndpoint(this.http);

@@ -2,7 +2,7 @@ import {computed, inject, Service, Signal, signal} from '@angular/core';
 
 import {AquaticCenter} from '../domain/model/aquatic-center.entity';
 import {Reservation} from '../domain/model/reservation.entity';
-import {AquaticCentersService} from '../infrastructure/aquatic-centers.service';
+
 
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {retry} from 'rxjs';
