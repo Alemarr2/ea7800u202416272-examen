@@ -1,11 +1,11 @@
 <mat-sidenav-container class="layout-container" autosize>
-  <mat-sidenav mode="side" opened [class.collapsed]="collapsed()" class="sidenav">
+  <mat-sidenav position="end"  mode="side" opened [class.collapsed]="collapsed()" class="sidenav">
     <div class="brand">
       <button mat-icon-button (click)="toggleMenu()" aria-label="Toggle navigation">
         <mat-icon>menu</mat-icon>
       </button>
       @if (!collapsed()) {
-        <span>Learning Center</span>
+        <span>AquaLife Aquatic Centers</span>
       }
     </div>
 
